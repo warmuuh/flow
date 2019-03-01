@@ -2,9 +2,9 @@ package flow;
 
 import java.util.List;
 
-public interface ProviderContract {
+public interface ProviderContract<P extends Provider> {
 
 	
-	public List<Provider> discover(Object object);
+	public List<P> discover(Object object);
 	
 }
