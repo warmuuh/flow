@@ -11,5 +11,5 @@ public interface Product<D extends Dependency> {
 	 * @param d the dependency to test
 	 * @return true if the dependency is satisfied by this product
 	 */
-	boolean satisfies(D d);
+//	boolean satisfies(D d);
 }
