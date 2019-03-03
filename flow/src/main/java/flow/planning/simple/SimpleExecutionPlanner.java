@@ -1,4 +1,4 @@
-package flow.execution.simple;
+package flow.planning.simple;
 
 import static java.util.stream.Collectors.toList;
 
@@ -10,7 +10,7 @@ import flow.Dependency;
 import flow.FlowException;
 import flow.Product;
 import flow.Provider;
-import flow.execution.ExecutionPlanner;
+import flow.planning.ExecutionPlanner;
 import lombok.SneakyThrows;
 import lombok.var;
 
@@ -40,13 +40,12 @@ public class SimpleExecutionPlanner<D extends Dependency, Prod extends Product<D
 		List<ExecutionStep<D, Prod, P>> result = new LinkedList<>();
 		
 		for(P provider : sortedProviders) {
-			String id = "step[" + provider.getId() + "]";
 			
 			List<ExecutionStep<D, Prod, P>> dependendExecutionSteps = provider.getDependencies().stream()
 			.map(d -> findExecutionStepsForDependency(result, d))
 			.collect(toList());
 			
-			var newStep = new ExecutionStep<D, Prod, P>(id, provider, dependendExecutionSteps);
+			var newStep = new ExecutionStep<D, Prod, P>(provider, dependendExecutionSteps);
 			result.add(newStep);
 		}
 		return result;

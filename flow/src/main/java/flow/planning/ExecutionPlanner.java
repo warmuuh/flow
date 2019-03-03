@@ -1,4 +1,6 @@
-package flow.execution;
+package flow.planning;
+
+import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 
@@ -35,12 +37,16 @@ public interface ExecutionPlanner<D extends Dependency, Prod extends Product<D>,
 
 	@Value
 	public class ExecutionStep<D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>> {
-		String id;
 		P provider;
 		/**
 		 * list of execution steps that have to be executed before in exactly the order needed 
 		 */
 		List<ExecutionStep<D, Prod, P>> dependentExecutionSteps;
+		
+		public String toString() {
+			List<String> deps = dependentExecutionSteps.stream().map(s -> s.getProvider().getId()).collect(toList());
+			return "Step["+provider.getId()+"](deps:"+deps+")";
+		}
 	}
 
 }
