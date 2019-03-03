@@ -9,12 +9,15 @@ import java.util.stream.Collectors;
 
 import flow.ProviderContract;
 import flow.typebased.MethodCallingProvider;
+import flow.typebased.ObjectBasedProduct;
+import flow.typebased.StaticObjectProvider;
 import flow.typebased.TypeBasedDependency;
+import flow.typebased.TypeBasedProvider;
 
-public class AnnotationContract implements ProviderContract<MethodCallingProvider> {
+public class AnnotationContract implements ProviderContract<TypeBasedDependency, ObjectBasedProduct, TypeBasedProvider> {
 
 	@Override
-	public List<MethodCallingProvider> discover(Object object) {
+	public List<TypeBasedProvider> discover(Object object) {
 		return Arrays.stream(object.getClass().getMethods()).filter(this::isValidMethods)
 				.map(t -> extractProvider(object, t)).collect(toList());
 	}
@@ -32,6 +35,11 @@ public class AnnotationContract implements ProviderContract<MethodCallingProvide
 		return Arrays.stream(method.getParameters())
 				.map(p -> new TypeBasedDependency(p.getType()))
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public TypeBasedProvider providerForInput(Object object) {
+		return new StaticObjectProvider(object);
 	}
 
 }

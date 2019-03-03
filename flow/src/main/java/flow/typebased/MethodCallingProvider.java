@@ -8,19 +8,25 @@ import java.util.stream.Collectors;
 import flow.FlowException;
 import flow.Provider;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
-@Data
-public class MethodCallingProvider implements Provider<ObjectBasedProduct, TypeBasedDependency>{
+@EqualsAndHashCode(callSuper=true)
+public class MethodCallingProvider extends TypeBasedProvider {
 
 	private final Object object;
 	private final Method method;
-	private final List<TypeBasedDependency> dependencies;
+	@Getter private final List<TypeBasedDependency> dependencies;
 	
-	@Override
-	public String getId() {
-		return method.getDeclaringClass().getSimpleName() + "." + method.getName();
+	
+	public MethodCallingProvider(Object object, Method method, List<TypeBasedDependency> dependencies) {
+		super(method.getDeclaringClass().getSimpleName() + "." + method.getName(), new TypeBasedDependency(method.getReturnType()));
+		this.object = object;
+		this.method = method;
+		this.dependencies = dependencies;
 	}
-
+	
+	
 	@Override
 	public ObjectBasedProduct invoke(List<ObjectBasedProduct> products) throws FlowException {
 		Object[] arguments = constructArguments(products);
@@ -40,11 +46,6 @@ public class MethodCallingProvider implements Provider<ObjectBasedProduct, TypeB
 
 	private Object[] constructArguments(List<ObjectBasedProduct> products) {
 		return products.stream().map(ObjectBasedProduct::getObject).collect(Collectors.toList()).toArray();
-	}
-	
-	@Override
-	public TypeBasedDependency getProvidingDependency() {
-		return new TypeBasedDependency(method.getReturnType());
 	}
 	
 }
