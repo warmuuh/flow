@@ -5,16 +5,20 @@ import static java.util.stream.Collectors.toList;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import flow.FlowException;
 import flow.ProviderContract;
+import flow.StaticProvider;
+import flow.StaticResolver;
 import flow.typebased.MethodCallingProvider;
 import flow.typebased.ObjectBasedProduct;
-import flow.typebased.StaticObjectProvider;
+import flow.typebased.DeferredObjectProvider;
 import flow.typebased.TypeBasedDependency;
 import flow.typebased.TypeBasedProvider;
 
-public class AnnotationContract implements ProviderContract<TypeBasedDependency, ObjectBasedProduct, TypeBasedProvider> {
+public class AnnotationContract implements ProviderContract<TypeBasedDependency, ObjectBasedProduct, TypeBasedProvider, DeferredObjectProvider> {
 
 	@Override
 	public List<TypeBasedProvider> discover(Object object) {
@@ -38,8 +42,14 @@ public class AnnotationContract implements ProviderContract<TypeBasedDependency,
 	}
 
 	@Override
-	public TypeBasedProvider providerForInput(Object object) {
-		return new StaticObjectProvider(object);
+	public DeferredObjectProvider providerForInput(TypeBasedDependency providedDependency) {
+		return new DeferredObjectProvider(providedDependency);
+	}
+
+	@Override
+	public StaticResolver<ObjectBasedProduct, TypeBasedDependency> createResolver(List<Object> resolvables) throws FlowException {
+		Map<TypeBasedDependency, Object> mapping = resolvables.stream().collect(Collectors.toMap(o -> new TypeBasedDependency(o.getClass()), o -> o));
+		return d -> new ObjectBasedProduct(mapping.get(d));
 	}
 
 }

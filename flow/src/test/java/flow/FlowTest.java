@@ -37,12 +37,12 @@ class FlowTest {
 	
 	
 	@Test
-	void test() throws FlowException {
+	void shouldTakeProvidedInputIntoAccount() throws FlowException {
 		var flow = new Flow<>(new AnnotationContract(), new SequentialExecutionEngine<>());
 		SelfProvider2 provider2 = new SelfProvider2();
 		flow.registerProviders(new SelfProvider1(), provider2);
 		
-		var plan = flow.planExecution(new TypeBasedDependency(SelfProvider2.class), new InputObject());
+		var plan = flow.planExecution(new TypeBasedDependency(SelfProvider2.class), new TypeBasedDependency(InputObject.class));
 		ObjectBasedProduct result = flow.executePlan(plan);
 		assertThat(result.getObject()).isEqualTo(provider2);
 	}

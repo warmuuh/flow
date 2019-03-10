@@ -8,6 +8,7 @@ import flow.Dependency;
 import flow.FlowException;
 import flow.Product;
 import flow.Provider;
+import flow.StaticProvider;
 import lombok.Value;
 
 /**
@@ -15,7 +16,7 @@ import lombok.Value;
  * and what results to reuse so that the least possible providers are executed for a given type
  * 
  */
-public interface ExecutionPlanner<D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>> {
+public interface ExecutionPlanner<D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>, S extends Provider<Prod,D>& StaticProvider<Prod, D>> {
 
 
 	/**
@@ -24,7 +25,7 @@ public interface ExecutionPlanner<D extends Dependency, Prod extends Product<D>,
 	 * @return a plan that describes what steps need to be executed in what order
 	 * @throws FlowException
 	 */
-	ExecutionPlan<D, Prod, P> planExecution(List<P> providers, D dep) throws FlowException;
+	ExecutionPlan<D, Prod, P> planExecution(List<P> providers, List<S> inputs, D dep) throws FlowException;
 	
 	
 	/**
@@ -33,6 +34,7 @@ public interface ExecutionPlanner<D extends Dependency, Prod extends Product<D>,
 	@Value
 	public class ExecutionPlan<D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>> {
 		private final List<ExecutionStep<D, Prod, P>> steps;
+		private final List<StaticProvider<Prod, D>> inputs;
 	}
 
 	@Value

@@ -10,7 +10,10 @@ import flow.Dependency;
 import flow.FlowException;
 import flow.Product;
 import flow.Provider;
+import flow.StaticProvider;
 import flow.planning.ExecutionPlanner;
+import flow.planning.ExecutionPlanner.ExecutionPlan;
+import flow.planning.ExecutionPlanner.ExecutionStep;
 import lombok.SneakyThrows;
 import lombok.var;
 
@@ -23,14 +26,20 @@ import lombok.var;
  * * chosen alternative is based on sequence-order of given providers
  *
  */
-public class SimpleExecutionPlanner<D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>> implements ExecutionPlanner<D, Prod, P> {
+public class SimpleExecutionPlanner<D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>, S extends Provider<Prod,D>& StaticProvider<Prod, D>> 
+implements ExecutionPlanner<D, Prod, P, S> {
 
 
 	@Override
-	public ExecutionPlan<D, Prod, P> planExecution(List<P> providers, D queriedDependency) throws FlowException {
+	public ExecutionPlan<D, Prod, P> planExecution(List<P> providers, List<S> inputs, D queriedDependency) throws FlowException {
+		List<StaticProvider<Prod, D>> staticProvs = new LinkedList<StaticProvider<Prod,D>>(inputs);
+		List<P> allProviders = new LinkedList<P>();
+		allProviders.addAll(providers);
+		for(Provider<Prod,D> i : inputs)
+			allProviders.add((P)i); //TODO: hack
 		
-		List<ExecutionStep<D, Prod, P>> steps = calculateSteps(providers, queriedDependency);
-		return new ExecutionPlan<D, Prod, P>(steps);
+		List<ExecutionStep<D, Prod, P>> steps = calculateSteps(allProviders, queriedDependency);
+		return new ExecutionPlan<D, Prod, P>(steps, staticProvs);
 	}
 
 	private List<ExecutionStep<D, Prod, P>> calculateSteps(List<P> providers, D queriedDependency) {

@@ -6,7 +6,7 @@ import java.util.List;
  * a provider encapsulates the logic that something can be created based on some dependencies 
  *
  */
-public interface Provider<P extends Product, D extends Dependency> {
+public interface Provider<P extends Product<D>, D extends Dependency> {
 
 	String getId();
 
