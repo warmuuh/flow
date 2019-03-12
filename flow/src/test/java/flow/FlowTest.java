@@ -1,16 +1,15 @@
 package flow;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 
 import flow.annotations.AnnotationContract;
 import flow.annotations.Flower;
 import flow.execution.SequentialExecutionEngine;
-import flow.planning.ExecutionPlanner.ExecutionPlan;
 import flow.typebased.ObjectBasedProduct;
 import flow.typebased.TypeBasedDependency;
-import flow.typebased.TypeBasedProvider;
 import lombok.var;
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 class FlowTest {
@@ -43,7 +42,7 @@ class FlowTest {
 		flow.registerProviders(new SelfProvider1(), provider2);
 		
 		var plan = flow.planExecution(new TypeBasedDependency(SelfProvider2.class), new TypeBasedDependency(InputObject.class));
-		ObjectBasedProduct result = flow.executePlan(plan);
+		ObjectBasedProduct result = flow.executePlan(plan, new InputObject());
 		assertThat(result.getObject()).isEqualTo(provider2);
 	}
 

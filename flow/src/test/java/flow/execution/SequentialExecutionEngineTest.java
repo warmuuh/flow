@@ -2,9 +2,10 @@ package flow.execution;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 
@@ -17,7 +18,6 @@ import flow.planning.ExecutionPlanner.ExecutionPlan;
 import flow.planning.simple.TestDependency;
 import flow.planning.simple.TestProduct;
 import flow.planning.simple.TestProvider;
-import flow.planning.simple.TestStaticProvider;
 import lombok.var;
 
 class SequentialExecutionEngineTest {
@@ -29,7 +29,7 @@ class SequentialExecutionEngineTest {
 		TestProvider provider2 = createProvider("prov2", "dep2", "dep1");
 		var step1 = new ExecutionPlanner.ExecutionStep<TestDependency, TestProduct, TestProvider>(provider2, emptyList());
 		var step2 = new ExecutionPlanner.ExecutionStep<TestDependency, TestProduct, TestProvider>(provider, asList(step1));
-		var plan = new ExecutionPlan<TestDependency, TestProduct, TestProvider>(asList(step1, step2),emptyList());
+		var plan = new ExecutionPlan<TestDependency, TestProduct, TestProvider>(asList(step1, step2));
 		TestProduct result = sut.execute(plan, new MapbasedResolver());
 		
 		assertThat(result).isEqualTo(provider.getProduct());
@@ -49,7 +49,7 @@ class SequentialExecutionEngineTest {
 		var step1 = new ExecutionPlanner.ExecutionStep<TestDependency, TestProduct, TestProvider>(baseProvider, emptyList());
 		var step2 = new ExecutionPlanner.ExecutionStep<TestDependency, TestProduct, TestProvider>(provider1, asList(step1));
 		var step3 = new ExecutionPlanner.ExecutionStep<TestDependency, TestProduct, TestProvider>(provider2, asList(step1));
-		var plan = new ExecutionPlan<TestDependency, TestProduct, TestProvider>(asList(step1, step2, step3),emptyList());
+		var plan = new ExecutionPlan<TestDependency, TestProduct, TestProvider>(asList(step1, step2, step3));
 		sut.execute(plan, new MapbasedResolver());
 		
 		Mockito.verify(baseProvider, Mockito.times(1)).invoke(emptyList());
@@ -60,16 +60,30 @@ class SequentialExecutionEngineTest {
 		var sut = new SequentialExecutionEngine<TestDependency, TestProduct, TestProvider>();
 		
 		TestProvider provider1 = createProvider("prov1", "dep1", "dep2");
-		TestStaticProvider provider2 = new TestStaticProvider("prov2", new TestDependency("dep2"));
-		var step1 = new ExecutionPlanner.ExecutionStep<TestDependency, TestProduct, TestProvider>(provider2, asList());
+		TestDependency inputDependency = new TestDependency("dep2");
+		var step1 = new ExecutionPlanner.InputStep<TestDependency, TestProduct, TestProvider>(inputDependency, asList());
 		var step2 = new ExecutionPlanner.ExecutionStep<TestDependency, TestProduct, TestProvider>(provider1, asList(step1));
-		var plan = new ExecutionPlan<TestDependency, TestProduct, TestProvider>(asList(step1, step2), singletonList(provider2));
+		var plan = new ExecutionPlan<TestDependency, TestProduct, TestProvider>(asList(step2));
 		
 		assertThatCode(() -> 
-			sut.execute(plan, new MapbasedResolver(new TestDependency("dep2"), new TestProduct("testProduct2")))
+			sut.execute(plan, new MapbasedResolver(inputDependency, new TestProduct("testProduct2")))
 		).doesNotThrowAnyException();
 	}
-
+	
+	@Test
+	void shouldThrowExceptionOnMissingInput() throws FlowException {
+		var sut = new SequentialExecutionEngine<TestDependency, TestProduct, TestProvider>();
+		
+		TestProvider provider1 = createProvider("prov1", "dep1", "dep2");
+		TestDependency inputDependency = new TestDependency("dep2");
+		var step1 = new ExecutionPlanner.InputStep<TestDependency, TestProduct, TestProvider>(inputDependency, asList());
+		var step2 = new ExecutionPlanner.ExecutionStep<TestDependency, TestProduct, TestProvider>(provider1, asList(step1));
+		var plan = new ExecutionPlan<TestDependency, TestProduct, TestProvider>(asList(step2));
+		
+		assertThatThrownBy(() -> 
+			sut.execute(plan, new MapbasedResolver())
+		).isInstanceOf(FlowException.class);
+	}
 	
 	
 	

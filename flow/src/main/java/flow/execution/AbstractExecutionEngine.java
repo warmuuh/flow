@@ -9,10 +9,12 @@ import flow.Dependency;
 import flow.FlowException;
 import flow.Product;
 import flow.Provider;
-import flow.StaticProvider;
 import flow.StaticResolver;
 import flow.planning.ExecutionPlanner.ExecutionPlan;
 import flow.planning.ExecutionPlanner.ExecutionStep;
+import flow.planning.ExecutionPlanner.InputStep;
+import flow.planning.ExecutionPlanner.Step;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -21,18 +23,19 @@ public abstract class AbstractExecutionEngine<T, D extends Dependency, Prod exte
 	@Override
 	public T execute(ExecutionPlan<D, Prod, P> plan, StaticResolver<Prod, D> staticResolver) throws FlowException {
 
-		Map<ExecutionStep<D, Prod, P>, T> results = new HashMap<>();
-		
-		//TODO: modifying state, not thread-safe!, also recursive plan execution does not work!
-		initializeInputs(plan.getInputs(), staticResolver);
+		Map<Step<D, Prod, P>, T> results = new HashMap<>();
 		
 		T lastProd = null;
-		for (ExecutionStep<D, Prod, P> step : plan.getSteps()) {
+		for (Step<D, Prod, P> step : plan.getSteps()) {
 			log.info("Executing step: " + step);
 			List<T> dependencies = step.getDependentExecutionSteps().stream()
-				.map(dep -> results.get(dep))
+				.map(dep -> getCachedResult(results, staticResolver, dep))
 				.collect(Collectors.toList());
-			T invocationResult = executeStep(step, dependencies);
+			
+			T invocationResult = null;
+			if (step instanceof ExecutionStep)
+				invocationResult = executeStep((ExecutionStep<D, Prod, P>)step, dependencies);
+			
 			results.put(step, invocationResult);
 			lastProd = invocationResult;
 		}
@@ -40,11 +43,18 @@ public abstract class AbstractExecutionEngine<T, D extends Dependency, Prod exte
 		return lastProd;
 	}
 
-	private void initializeInputs(List<StaticProvider<Prod, D>> inputs, StaticResolver<Prod, D> staticResolver) {
-		for (StaticProvider<Prod, D> provider : inputs) {
-			provider.setResolver(staticResolver);
-		}
+	@SneakyThrows
+	private T getCachedResult(Map<Step<D, Prod, P>, T> results, StaticResolver<Prod, D> staticResolver, Step<D, Prod, P> step) {
+		if (step instanceof InputStep && staticResolver.canResolve(step.getProvidingDependency()))
+			return wrapInputValue(staticResolver.resolve(step.getProvidingDependency()));
+		
+		if (!results.containsKey(step))
+			throw new FlowException("could not resolve input for "+step);
+		
+		return results.get(step);
 	}
 
 	protected abstract T executeStep(ExecutionStep<D, Prod, P> step, List<T> dependencies)  throws FlowException;
+	
+	protected abstract T wrapInputValue(Prod input);
 }

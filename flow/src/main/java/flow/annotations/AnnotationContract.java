@@ -10,15 +10,13 @@ import java.util.stream.Collectors;
 
 import flow.FlowException;
 import flow.ProviderContract;
-import flow.StaticProvider;
 import flow.StaticResolver;
 import flow.typebased.MethodCallingProvider;
 import flow.typebased.ObjectBasedProduct;
-import flow.typebased.DeferredObjectProvider;
 import flow.typebased.TypeBasedDependency;
 import flow.typebased.TypeBasedProvider;
 
-public class AnnotationContract implements ProviderContract<TypeBasedDependency, ObjectBasedProduct, TypeBasedProvider, DeferredObjectProvider> {
+public class AnnotationContract implements ProviderContract<TypeBasedDependency, ObjectBasedProduct, TypeBasedProvider> {
 
 	@Override
 	public List<TypeBasedProvider> discover(Object object) {
@@ -41,15 +39,22 @@ public class AnnotationContract implements ProviderContract<TypeBasedDependency,
 				.collect(Collectors.toList());
 	}
 
-	@Override
-	public DeferredObjectProvider providerForInput(TypeBasedDependency providedDependency) {
-		return new DeferredObjectProvider(providedDependency);
-	}
 
 	@Override
 	public StaticResolver<ObjectBasedProduct, TypeBasedDependency> createResolver(List<Object> resolvables) throws FlowException {
 		Map<TypeBasedDependency, Object> mapping = resolvables.stream().collect(Collectors.toMap(o -> new TypeBasedDependency(o.getClass()), o -> o));
-		return d -> new ObjectBasedProduct(mapping.get(d));
+		return new StaticResolver<ObjectBasedProduct, TypeBasedDependency>() {
+			
+			@Override
+			public ObjectBasedProduct resolve(TypeBasedDependency providingDependency) {
+				return new ObjectBasedProduct(mapping.get(providingDependency));
+			}
+			
+			@Override
+			public boolean canResolve(TypeBasedDependency dependency) {
+				return mapping.containsKey(dependency);
+			}
+		};
 	}
 
 }

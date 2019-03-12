@@ -22,4 +22,11 @@ public class SequentialExecutionEngine<D extends Dependency, Prod extends Produc
 		return step.getProvider().invoke(dependencies);
 	}
 
+	@Override
+	protected Prod wrapInputValue(Prod input) {
+		return input;
+	}
+
+	
+
 }

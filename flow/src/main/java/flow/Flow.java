@@ -2,6 +2,7 @@ package flow;
 
 import static java.util.Arrays.asList;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,16 +11,16 @@ import flow.planning.ExecutionPlanner;
 import flow.planning.ExecutionPlanner.ExecutionPlan;
 import flow.planning.simple.SimpleExecutionPlanner;
 
-public class Flow<T, D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>, S extends Provider<Prod,D>& StaticProvider<Prod, D>> {
+public class Flow<T, D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>> {
 
-	private final ProviderContract<D, Prod, P, S> contract;
-	private final ExecutionPlanner<D, Prod, P, S> executionPlanner = new SimpleExecutionPlanner<D, Prod, P, S>();
+	private final ProviderContract<D, Prod, P> contract;
+	private final ExecutionPlanner<D, Prod, P> executionPlanner = new SimpleExecutionPlanner<D, Prod, P>();
 	private final ExecutionEngine<T, D, Prod, P> executionEngine;
 	private List<P> registeredProviders = new LinkedList<>();
 	
 	
 	
-	public Flow(ProviderContract<D, Prod, P, S> contract, ExecutionEngine<T, D, Prod, P> executionEngine) {
+	public Flow(ProviderContract<D, Prod, P> contract, ExecutionEngine<T, D, Prod, P> executionEngine) {
 		super();
 		this.contract = contract;
 		this.executionEngine = executionEngine;
@@ -27,7 +28,7 @@ public class Flow<T, D extends Dependency, Prod extends Product<D>, P extends Pr
 
 
 	
-	public Flow<T, D, Prod, P, S> registerProviders(Object...providerObjects) {
+	public Flow<T, D, Prod, P> registerProviders(Object...providerObjects) {
 		List<P> newProviders = new LinkedList<>();
 		for(Object po : providerObjects)
 			newProviders.addAll(contract.discover(po));
@@ -37,11 +38,7 @@ public class Flow<T, D extends Dependency, Prod extends Product<D>, P extends Pr
 	
 	
 	public ExecutionPlan<D, Prod, P> planExecution(D queriedDependency, D...providedDependencies) throws FlowException {
-		List<S> inputProviders = new LinkedList<>();
-		for(D providedDependency : providedDependencies)
-			inputProviders.add(contract.providerForInput(providedDependency));
-		
-		return executionPlanner.planExecution(registeredProviders, inputProviders, queriedDependency);
+		return executionPlanner.planExecution(registeredProviders, Arrays.asList(providedDependencies), queriedDependency);
 	}
 	
 	public T executePlan(ExecutionPlan<D, Prod, P> plan, Object...providedInputs) throws FlowException {

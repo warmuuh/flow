@@ -6,7 +6,6 @@ import java.util.Map;
 import flow.StaticResolver;
 import flow.planning.simple.TestDependency;
 import flow.planning.simple.TestProduct;
-import flow.planning.simple.TestProvider;
 import lombok.Getter;
 
 public class MapbasedResolver implements StaticResolver<TestProduct, TestDependency> {
@@ -22,5 +21,10 @@ public class MapbasedResolver implements StaticResolver<TestProduct, TestDepende
 	@Override
 	public TestProduct resolve(TestDependency providingDependency) {
 		return map.get(providingDependency);
+	}
+
+	@Override
+	public boolean canResolve(TestDependency dependency) {
+		return map.containsKey(dependency);
 	}
 }

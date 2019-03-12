@@ -1,5 +1,6 @@
 package flow.planning.simple;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collections;
@@ -10,10 +11,7 @@ import flow.Dependency;
 import flow.FlowException;
 import flow.Product;
 import flow.Provider;
-import flow.StaticProvider;
 import flow.planning.ExecutionPlanner;
-import flow.planning.ExecutionPlanner.ExecutionPlan;
-import flow.planning.ExecutionPlanner.ExecutionStep;
 import lombok.SneakyThrows;
 import lombok.var;
 
@@ -26,32 +24,26 @@ import lombok.var;
  * * chosen alternative is based on sequence-order of given providers
  *
  */
-public class SimpleExecutionPlanner<D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>, S extends Provider<Prod,D>& StaticProvider<Prod, D>> 
-implements ExecutionPlanner<D, Prod, P, S> {
+public class SimpleExecutionPlanner<D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>> 
+implements ExecutionPlanner<D, Prod, P> {
 
 
 	@Override
-	public ExecutionPlan<D, Prod, P> planExecution(List<P> providers, List<S> inputs, D queriedDependency) throws FlowException {
-		List<StaticProvider<Prod, D>> staticProvs = new LinkedList<StaticProvider<Prod,D>>(inputs);
-		List<P> allProviders = new LinkedList<P>();
-		allProviders.addAll(providers);
-		for(Provider<Prod,D> i : inputs)
-			allProviders.add((P)i); //TODO: hack
-		
-		List<ExecutionStep<D, Prod, P>> steps = calculateSteps(allProviders, queriedDependency);
-		return new ExecutionPlan<D, Prod, P>(steps, staticProvs);
+	public ExecutionPlan<D, Prod, P> planExecution(List<P> providers, List<D> inputs, D queriedDependency) throws FlowException {
+		List<Step<D, Prod, P>> steps = calculateSteps(providers, inputs, queriedDependency);
+		return new ExecutionPlan<D, Prod, P>(steps);
 	}
 
-	private List<ExecutionStep<D, Prod, P>> calculateSteps(List<P> providers, D queriedDependency) {
+	private List<Step<D, Prod, P>> calculateSteps(List<P> providers, List<D> inputs, D queriedDependency) {
 		var sortedProviders = new LinkedList<P>();
-		collectOrderedProviders(queriedDependency, providers, sortedProviders);
+		collectOrderedProviders(queriedDependency, providers, inputs, sortedProviders);
 		Collections.reverse(sortedProviders);
-		List<ExecutionStep<D, Prod, P>> result = new LinkedList<>();
+		List<Step<D, Prod, P>> result = new LinkedList<>();
 		
 		for(P provider : sortedProviders) {
 			
-			List<ExecutionStep<D, Prod, P>> dependendExecutionSteps = provider.getDependencies().stream()
-			.map(d -> findExecutionStepsForDependency(result, d))
+			List<Step<D, Prod, P>> dependendExecutionSteps = provider.getDependencies().stream()
+			.map(d -> findExecutionStepsForDependency(result, inputs, d))
 			.collect(toList());
 			
 			var newStep = new ExecutionStep<D, Prod, P>(provider, dependendExecutionSteps);
@@ -61,23 +53,28 @@ implements ExecutionPlanner<D, Prod, P, S> {
 	}
 
 	@SneakyThrows
-	private void collectOrderedProviders(D curDependency, List<P> providers, List<P> sortedProviders) {
+	private void collectOrderedProviders(D curDependency, List<P> providers, List<D> inputs, List<P> sortedProviders) {
+		if (inputs.contains(curDependency))
+			return;
+		
 		var provider = providers.stream().filter(p -> p.getProvidingDependency().equals(curDependency))
-						.findAny().orElseThrow(() -> new FlowException("Cannot find provider for dependency " + curDependency));
+						.findAny()
+						.orElseThrow(() -> new FlowException("Cannot find provider for dependency " + curDependency));
 		
 		if (sortedProviders.contains(provider))
 			throw new FlowException("Circular reference found including dependency " + curDependency);
 		
 		sortedProviders.add(provider);
 		
-		provider.getDependencies().forEach(d -> collectOrderedProviders(d, providers, sortedProviders));
+		provider.getDependencies().forEach(d -> collectOrderedProviders(d, providers, inputs, sortedProviders));
 	}
 	
 	@SneakyThrows
-	private ExecutionStep<D, Prod, P> findExecutionStepsForDependency(List<ExecutionStep<D, Prod, P>> steps, D d)  {
+	private Step<D, Prod, P> findExecutionStepsForDependency(List<Step<D, Prod, P>> steps, List<D> inputs, D d)  {
 		return steps.stream()
-				.filter(step -> step.getProvider().getProvidingDependency().equals(d))
+				.filter(step -> step.getProvidingDependency().equals(d))
 				.findAny()
-				.orElseThrow(() -> new FlowException("could not find provider for dependency " + d + " in previous execution steps."));
+				.or(() -> inputs.stream().filter(i -> i.equals(d)).map(i -> new InputStep<D, Prod, P>(i, emptyList())).findAny())
+				.orElseThrow(() -> new FlowException("could not find provider for dependency " + d + " in previous execution steps nor in inputs."));
 	}
 }

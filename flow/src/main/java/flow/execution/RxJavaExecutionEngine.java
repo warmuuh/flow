@@ -38,4 +38,9 @@ public class RxJavaExecutionEngine<D extends Dependency, Prod extends Product<D>
 		return step.getProvider().invoke(params);
 	}
 
+	@Override
+	protected Single<Prod> wrapInputValue(Prod input) { 
+		return Single.just(input);
+	}
+
 }
