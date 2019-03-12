@@ -12,11 +12,11 @@ import flow.FlowException;
 import flow.ProviderContract;
 import flow.StaticResolver;
 import flow.typebased.MethodCallingProvider;
-import flow.typebased.ObjectBasedProduct;
-import flow.typebased.TypeBasedDependency;
+import flow.typebased.ObjectRef;
+import flow.typebased.TypeRef;
 import flow.typebased.TypeBasedProvider;
 
-public class AnnotationContract implements ProviderContract<TypeBasedDependency, ObjectBasedProduct, TypeBasedProvider> {
+public class AnnotationContract implements ProviderContract<TypeRef, ObjectRef, TypeBasedProvider> {
 
 	@Override
 	public List<TypeBasedProvider> discover(Object object) {
@@ -25,7 +25,7 @@ public class AnnotationContract implements ProviderContract<TypeBasedDependency,
 	}
 
 	private MethodCallingProvider extractProvider(Object object, Method method) {
-		List<TypeBasedDependency> dependencies = getDependencies(method);
+		List<TypeRef> dependencies = getDependencies(method);
 		return new MethodCallingProvider(object, method, dependencies);
 	}
 
@@ -33,25 +33,25 @@ public class AnnotationContract implements ProviderContract<TypeBasedDependency,
 		return method.getAnnotation(Flower.class) != null;
 	}
 
-	private List<TypeBasedDependency> getDependencies(Method method) {
+	private List<TypeRef> getDependencies(Method method) {
 		return Arrays.stream(method.getParameters())
-				.map(p -> new TypeBasedDependency(p.getType()))
+				.map(p -> new TypeRef(p.getType()))
 				.collect(Collectors.toList());
 	}
 
 
 	@Override
-	public StaticResolver<ObjectBasedProduct, TypeBasedDependency> createResolver(List<Object> resolvables) throws FlowException {
-		Map<TypeBasedDependency, Object> mapping = resolvables.stream().collect(Collectors.toMap(o -> new TypeBasedDependency(o.getClass()), o -> o));
-		return new StaticResolver<ObjectBasedProduct, TypeBasedDependency>() {
+	public StaticResolver<ObjectRef, TypeRef> createResolver(List<Object> resolvables) throws FlowException {
+		Map<TypeRef, Object> mapping = resolvables.stream().collect(Collectors.toMap(o -> new TypeRef(o.getClass()), o -> o));
+		return new StaticResolver<ObjectRef, TypeRef>() {
 			
 			@Override
-			public ObjectBasedProduct resolve(TypeBasedDependency providingDependency) {
-				return new ObjectBasedProduct(mapping.get(providingDependency));
+			public ObjectRef resolve(TypeRef providingDependency) {
+				return new ObjectRef(mapping.get(providingDependency));
 			}
 			
 			@Override
-			public boolean canResolve(TypeBasedDependency dependency) {
+			public boolean canResolve(TypeRef dependency) {
 				return mapping.containsKey(dependency);
 			}
 		};

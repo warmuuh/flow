@@ -14,11 +14,11 @@ public class MethodCallingProvider extends TypeBasedProvider {
 
 	private final Object object;
 	private final Method method;
-	@Getter private final List<TypeBasedDependency> dependencies;
+	@Getter private final List<TypeRef> dependencies;
 	
 	
-	public MethodCallingProvider(Object object, Method method, List<TypeBasedDependency> dependencies) {
-		super(method.getDeclaringClass().getSimpleName() + "." + method.getName(), new TypeBasedDependency(method.getReturnType()));
+	public MethodCallingProvider(Object object, Method method, List<TypeRef> dependencies) {
+		super(method.getDeclaringClass().getSimpleName() + "." + method.getName(), new TypeRef(method.getReturnType()));
 		this.object = object;
 		this.method = method;
 		this.dependencies = dependencies;
@@ -26,10 +26,10 @@ public class MethodCallingProvider extends TypeBasedProvider {
 	
 	
 	@Override
-	public ObjectBasedProduct invoke(List<ObjectBasedProduct> products) throws FlowException {
+	public ObjectRef invoke(List<ObjectRef> products) throws FlowException {
 		Object[] arguments = constructArguments(products);
 		Object result = invokeMethod(arguments);
-		return new ObjectBasedProduct(result);
+		return new ObjectRef(result);
 	}
 
 	private Object invokeMethod(Object[] arguments) throws FlowException {
@@ -42,8 +42,8 @@ public class MethodCallingProvider extends TypeBasedProvider {
 		}
 	}
 
-	private Object[] constructArguments(List<ObjectBasedProduct> products) {
-		return products.stream().map(ObjectBasedProduct::getObject).collect(Collectors.toList()).toArray();
+	private Object[] constructArguments(List<ObjectRef> products) {
+		return products.stream().map(ObjectRef::getObject).collect(Collectors.toList()).toArray();
 	}
 	
 }

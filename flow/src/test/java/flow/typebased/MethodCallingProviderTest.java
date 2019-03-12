@@ -52,7 +52,7 @@ public class MethodCallingProviderTest {
 			TestClass obj = mock(TestClass.class);
 			when(obj.stringParamDep(anyString())).thenReturn("testValue");
 			val provider = createProvider(obj, "stringParamDep");
-			provider.invoke(asList(new ObjectBasedProduct("stringParamValue")));
+			provider.invoke(asList(new ObjectRef("stringParamValue")));
 			verify(obj).stringParamDep("stringParamValue");
 		}
 
@@ -63,7 +63,7 @@ public class MethodCallingProviderTest {
 			when(obj.stringParamDep(anyString())).thenReturn("testValue");
 			val provider = createProvider(obj, "stringParamDep");
 			
-			assertThatThrownBy(() -> provider.invoke(asList(new ObjectBasedProduct(Integer.valueOf(123)))) )
+			assertThatThrownBy(() -> provider.invoke(asList(new ObjectRef(Integer.valueOf(123)))) )
 			.isInstanceOf(FlowException.class);
 		}
 		
@@ -81,7 +81,7 @@ public class MethodCallingProviderTest {
 	void shouldCorrectlyCheckFullFillment() throws Exception {
 		TestClass obj = mock(TestClass.class);
 		val provider = createProvider(obj, "noParamMethod");
-		assertThat(provider.getProvidingDependency()).isEqualTo(new TypeBasedDependency(String.class));
+		assertThat(provider.getProvidingDependency()).isEqualTo(new TypeRef(String.class));
 	}
 
 	
@@ -89,7 +89,7 @@ public class MethodCallingProviderTest {
 		
 		Method method = Arrays.stream(TestClass.class.getMethods())
 		.filter(m -> m.getName().equals(methodName))
-		.findAny().orElseThrow();
+		.findAny().orElseThrow(() -> new NoSuchMethodException("TestFailure"));
 		
 		return new MethodCallingProvider(obj, method, emptyList());
 	}

@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public abstract class TypeBasedProvider implements Provider<ObjectBasedProduct, TypeBasedDependency> {
+public abstract class TypeBasedProvider implements Provider<ObjectRef, TypeRef> {
 
 	@Getter private final String id;
-	@Getter private final TypeBasedDependency providingDependency;
+	@Getter private final TypeRef providingDependency;
 	
 }

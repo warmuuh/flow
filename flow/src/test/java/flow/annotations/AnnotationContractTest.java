@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import flow.typebased.TypeBasedDependency;
+import flow.typebased.TypeRef;
 import lombok.val;
 
 class AnnotationContractTest {
@@ -60,7 +60,7 @@ class AnnotationContractTest {
 		
 		assertThat(providers)
 			.flatExtracting(p -> p.getDependencies())
-			.containsExactly(new TypeBasedDependency(String.class));
+			.containsExactly(new TypeRef(String.class));
 	}
 
 }

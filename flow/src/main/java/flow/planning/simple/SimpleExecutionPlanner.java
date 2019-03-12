@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import flow.Dependency;
 import flow.FlowException;
@@ -71,10 +72,20 @@ implements ExecutionPlanner<D, Prod, P> {
 	
 	@SneakyThrows
 	private Step<D, Prod, P> findExecutionStepsForDependency(List<Step<D, Prod, P>> steps, List<D> inputs, D d)  {
-		return steps.stream()
+		Optional<Step<D, Prod, P>> previousStep = steps.stream()
 				.filter(step -> step.getProvidingDependency().equals(d))
-				.findAny()
-				.or(() -> inputs.stream().filter(i -> i.equals(d)).map(i -> new InputStep<D, Prod, P>(i, emptyList())).findAny())
+				.findAny();
+		
+		if (previousStep.isPresent())
+			return previousStep.get();
+		
+		Optional<InputStep<D, Prod, P>> inputStep = inputs.stream()
+				.filter(i -> i.equals(d))
+				.map(i -> new InputStep<D, Prod, P>(i, emptyList()))
+				.findAny();
+		
+		
+		return inputStep
 				.orElseThrow(() -> new FlowException("could not find provider for dependency " + d + " in previous execution steps nor in inputs."));
 	}
 }
