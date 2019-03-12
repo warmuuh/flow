@@ -9,6 +9,10 @@ import flow.FlowException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+/**
+ * a provider implementation that wraps around a method invocation.
+ * 
+ */
 @EqualsAndHashCode(callSuper=true)
 public class MethodCallingProvider extends TypeBasedProvider {
 

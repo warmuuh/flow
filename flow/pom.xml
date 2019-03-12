@@ -9,11 +9,16 @@
 	</parent>
 	<artifactId>flow</artifactId>
 
+	<name>flow</name>
+	<description>dataflow orchestration library</description>
+	<url>https://github.com/warmuuh/flow</url>
+	<scm>
+		<url>https://github.com/warmuuh/flow</url>
+		<connection>scm:git:https://github.com/warmuuh/flow</connection>
+		<tag>HEAD</tag>
+	</scm>
 
 	<dependencies>
-
-
-
 		<dependency>
 			<artifactId>combinatorics</artifactId>
 			<groupId>com.speedment.common</groupId>
@@ -26,6 +31,6 @@
 			<version>1.3.8</version>
 			<optional>true</optional>
 		</dependency>
-
 	</dependencies>
+	
 </project>

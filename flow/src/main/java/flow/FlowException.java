@@ -2,6 +2,8 @@ package flow;
 
 public class FlowException extends Exception {
 
+	private static final long serialVersionUID = 4122061425353035888L;
+
 	public FlowException() {
 		super();
 		// TODO Auto-generated constructor stub

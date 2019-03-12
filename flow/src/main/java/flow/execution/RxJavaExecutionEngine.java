@@ -13,6 +13,11 @@ import flow.planning.ExecutionPlanner.ExecutionStep;
 import lombok.SneakyThrows;
 import rx.Single;
 
+/**
+ * Execution engine that uses RxJava to execute providers.
+ * Steps will be executed in parallel and RxJava handles necessary waiting for dependent steps.
+ * 
+ */
 public class RxJavaExecutionEngine<D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>> extends AbstractExecutionEngine<Single<Prod>, D, Prod, P> {
 	
 	@Override
@@ -26,6 +31,7 @@ public class RxJavaExecutionEngine<D extends Dependency, Prod extends Product<D>
 		return deps.map(ds -> executeStepInternal(step, ds)).cache();
 	}
 
+	@SuppressWarnings("unchecked")
 	private <T> List<T> convertArrayToTypedList(Object[] results) {
 		List<T> castedObjects = new LinkedList<T>();
 		for(Object r : results)

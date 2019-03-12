@@ -13,9 +13,23 @@ import flow.ProviderContract;
 import flow.StaticResolver;
 import flow.typebased.MethodCallingProvider;
 import flow.typebased.ObjectRef;
-import flow.typebased.TypeRef;
 import flow.typebased.TypeBasedProvider;
+import flow.typebased.TypeRef;
 
+/**
+ * a flow-contract that uses @Flower annotated methods to define providers. Parameters are the dependencies of the provider.
+ * 
+ * <pre>{@code 
+ *  public static class ExampleProvider {
+ *		@Flower
+ *		public ProvidedType execute(InputObject object) {
+ *			...
+ *		}
+ *	}
+ * }</pre>
+ * 
+ *
+ */
 public class AnnotationContract implements ProviderContract<TypeRef, ObjectRef, TypeBasedProvider> {
 
 	@Override

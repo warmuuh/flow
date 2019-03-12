@@ -11,6 +11,19 @@ import flow.planning.ExecutionPlanner;
 import flow.planning.ExecutionPlanner.ExecutionPlan;
 import flow.planning.simple.SimpleExecutionPlanner;
 
+/**
+ * Flow API facade. Example Usage:
+ * <pre>{@code 
+ * var flow = new Flow<>(new AnnotationContract(), new SequentialExecutionEngine<>());
+ * flow.registerProviders(provider1, provider2);
+ * 
+ * var plan = flow.planExecution(new TypeRef(SelfProvider2.class), new TypeRef(InputObject.class));
+ * ObjectRef result = flow.executePlan(plan, new InputObject());
+ *	}</pre>
+ * 
+ *
+ */
+
 public class Flow<T, D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>> {
 
 	private final ProviderContract<D, Prod, P> contract;
@@ -37,6 +50,8 @@ public class Flow<T, D extends Dependency, Prod extends Product<D>, P extends Pr
 	}
 	
 	
+	
+	@SuppressWarnings("unchecked")
 	public ExecutionPlan<D, Prod, P> planExecution(D queriedDependency, D...providedDependencies) throws FlowException {
 		return executionPlanner.planExecution(registeredProviders, Arrays.asList(providedDependencies), queriedDependency);
 	}

@@ -7,13 +7,11 @@ import flow.FlowException;
 import flow.Product;
 import flow.Provider;
 import flow.planning.ExecutionPlanner.ExecutionStep;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Sequentially executes providers, caches their results to be used in
  * subsequent providers and returns the result of the final step
  */
-@Slf4j
 public class SequentialExecutionEngine<D extends Dependency, Prod extends Product<D>, P extends Provider<Prod, D>>
 		extends AbstractExecutionEngine<Prod, D, Prod, P> {
 	
