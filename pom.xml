@@ -12,6 +12,19 @@
 		<module>flow</module>
 	</modules>
 
+	<properties>
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+
+	<description>dataflow orchestration library</description>
+	<url>https://github.com/warmuuh/flow</url>
+	<scm>
+		<url>https://github.com/warmuuh/flow</url>
+		<connection>scm:git:https://github.com/warmuuh/flow</connection>
+		<tag>HEAD</tag>
+	</scm>
+
+
 	<dependencies>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>

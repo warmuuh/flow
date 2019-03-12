@@ -9,14 +9,12 @@
 	</parent>
 	<artifactId>flow</artifactId>
 
+	<properties>
+		<maven.deploy.skip>false</maven.deploy.skip>
+	</properties>
+	
+	
 	<name>flow</name>
-	<description>dataflow orchestration library</description>
-	<url>https://github.com/warmuuh/flow</url>
-	<scm>
-		<url>https://github.com/warmuuh/flow</url>
-		<connection>scm:git:https://github.com/warmuuh/flow</connection>
-		<tag>HEAD</tag>
-	</scm>
 
 	<dependencies>
 		<dependency>
@@ -32,5 +30,5 @@
 			<optional>true</optional>
 		</dependency>
 	</dependencies>
-	
+
 </project>
