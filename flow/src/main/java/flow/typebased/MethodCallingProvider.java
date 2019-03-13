@@ -8,24 +8,31 @@ import java.util.stream.Collectors;
 import flow.FlowException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * a provider implementation that wraps around a method invocation.
  * 
  */
 @EqualsAndHashCode(callSuper=true)
+@ToString
 public class MethodCallingProvider extends TypeBasedProvider {
 
-	private final Object object;
+	@ToString.Exclude private final Object object;
 	private final Method method;
 	@Getter private final List<TypeRef> dependencies;
 	
 	
 	public MethodCallingProvider(Object object, Method method, List<TypeRef> dependencies) {
-		super(method.getDeclaringClass().getSimpleName() + "." + method.getName(), new TypeRef(method.getReturnType()));
+		super(method.getDeclaringClass().getSimpleName() + "." + method.getName(), constructReturnTypeRef(method));
 		this.object = object;
 		this.method = method;
 		this.dependencies = dependencies;
+	}
+
+
+	private static TypeRef constructReturnTypeRef(Method method) {
+		return new TypeRef(method.getGenericReturnType());
 	}
 	
 	

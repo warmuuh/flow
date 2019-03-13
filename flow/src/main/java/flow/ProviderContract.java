@@ -17,7 +17,7 @@ public interface ProviderContract<D extends Dependency, Prod extends Product<D>,
 	 * @param object
 	 * @return list of providers, possibly empty
 	 */
-	public List<P> discover(Object object);
+	public List<P> discover(Object object)  throws FlowException;
 	
 	/**
 	 * given some input values, a static resolver is created that is able to resolve queried dependencies during execution

@@ -1,14 +1,23 @@
 package flow.typebased;
 
+import java.lang.reflect.Type;
+
 import flow.Dependency;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * small wrapper around a class-type.
  */
-@Data
+@EqualsAndHashCode
+@ToString
 public class TypeRef implements Dependency {
 
-	private final Class<?> type;
-	
+	@Getter protected Type genericType; // has to be modifyable bc of GenericTypeRef
+
+	public TypeRef(Type genericType) {
+		this.genericType = genericType;
+	}
+
 }

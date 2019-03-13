@@ -41,7 +41,7 @@ public class Flow<T, D extends Dependency, Prod extends Product<D>, P extends Pr
 
 
 	
-	public Flow<T, D, Prod, P> registerProviders(Object...providerObjects) {
+	public Flow<T, D, Prod, P> registerProviders(Object...providerObjects) throws FlowException {
 		List<P> newProviders = new LinkedList<>();
 		for(Object po : providerObjects)
 			newProviders.addAll(contract.discover(po));

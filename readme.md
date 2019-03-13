@@ -7,13 +7,16 @@ your business logic.
 
 
 Changelog:
-* 0.0.1 - initial release
+ * 1.0.0 - initial release
+ * next release 
+    * async execution engine using CompletableFutures
+    * supporting generic dependencies (e.g. `List<String>`)
 
 
 Installation
 -----
 
-```
+```xml
 <dependency>
 	<groupId>com.github.warmuuh</groupId>
 	<artifactId>flow</artifactId>
@@ -33,7 +36,7 @@ Included in flow is a `SequentialExecutionEngine`, which executes each necessary
 
 Example for Sequential Execution:
 
-```
+```java
 var flow = new Flow<>(new AnnotationContract(), new SequentialExecutionEngine<>());
 flow.registerProviders(...);
 var plan = flow.planExecution(new TypeRef(...), new TypeRef(InputObject.class));
@@ -43,7 +46,7 @@ ObjectRef result = flow.executePlan(plan, new InputObject());
 
 Example for parallel execution using RxJava Execution-engine:
 
-```
+```java
 var flow = new Flow<>(new AnnotationContract(), new RxJavaExecutionEngine<>());
 flow.registerProviders(...);
 var plan = flow.planExecution(new TypeRef(...), new TypeRef(InputObject.class));
@@ -58,7 +61,7 @@ AnnotationContract
 
 To define your provider, you can use the `@Flower` annotation:
 
-```
+```java
 public static class ExampleClass {
 		@Flower
 		public ProvidedType execute(RequiredType object) {
@@ -66,6 +69,17 @@ public static class ExampleClass {
 		}
 	}
 ```
+
+Generics
+-----
+Parameterized types are normally removed due to type erasure. Only in certain cases are the types kept. Thats why to support generic types, a slightly different syntax is necessary:
+
+```java
+var plan = flow.planExecution(new GenericTypeRef<List<Double>>() {}, new GenericTypeRef<List<String>>() {});
+List<String> strings = asList("0", "1", "2");
+ObjectRef result = flow.executePlan(plan, new GenericObjectRef<List<String>>(strings) {});
+```
+
 
 More Details
 -----
@@ -78,10 +92,4 @@ Note on Dataflow centric development
 * using dataflow centric development heavily improves your testability. (clearly defined responsibility, clear dependencies, all input/output is defined via types)
 * providers work on their own. They dont actively "fetch" data except, if this is there only task
 * providers stick to SRP (single responsibility principle), they should only do one thing. This leads to easy testability.
-
-
-
-
-
-
 

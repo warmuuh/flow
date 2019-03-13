@@ -35,7 +35,7 @@ implements ExecutionPlanner<D, Prod, P> {
 		return new ExecutionPlan<D, Prod, P>(steps);
 	}
 
-	private List<Step<D, Prod, P>> calculateSteps(List<P> providers, List<D> inputs, D queriedDependency) {
+	private List<Step<D, Prod, P>> calculateSteps(List<P> providers, List<D> inputs, D queriedDependency)  throws FlowException {
 		var sortedProviders = new LinkedList<P>();
 		collectOrderedProviders(queriedDependency, providers, inputs, sortedProviders);
 		Collections.reverse(sortedProviders);
@@ -54,7 +54,7 @@ implements ExecutionPlanner<D, Prod, P> {
 	}
 
 	@SneakyThrows
-	private void collectOrderedProviders(D curDependency, List<P> providers, List<D> inputs, List<P> sortedProviders) {
+	private void collectOrderedProviders(D curDependency, List<P> providers, List<D> inputs, List<P> sortedProviders) throws FlowException{
 		if (inputs.contains(curDependency))
 			return;
 		
@@ -67,7 +67,16 @@ implements ExecutionPlanner<D, Prod, P> {
 		
 		sortedProviders.add(provider);
 		
-		provider.getDependencies().forEach(d -> collectOrderedProviders(d, providers, inputs, sortedProviders));
+		provider.getDependencies().forEach(d -> recurseIntoOrdering(provider, providers, inputs, sortedProviders, d));
+	}
+
+	@SneakyThrows
+	private void recurseIntoOrdering(P provider, List<P> providers, List<D> inputs, List<P> sortedProviders, D d) {
+		try {
+			collectOrderedProviders(d, providers, inputs, sortedProviders);
+		} catch (FlowException e) {
+			throw new FlowException("Error collecting dependencies for provider " + provider);
+		}
 	}
 	
 	@SneakyThrows
@@ -86,6 +95,7 @@ implements ExecutionPlanner<D, Prod, P> {
 		
 		
 		return inputStep
-				.orElseThrow(() -> new FlowException("could not find provider for dependency " + d + " in previous execution steps nor in inputs."));
+				//this should not happen as it is guarded in collectOrderedProvider already
+				.orElseThrow(() -> new FlowException("could not find provider for dependency " + d + " in previous execution steps nor in inputs.")); 
 	}
 }
