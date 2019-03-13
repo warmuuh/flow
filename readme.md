@@ -8,7 +8,7 @@ your business logic.
 
 Changelog:
  * 1.0.0 - initial release
- * next release 
+ * 1.1.0 
     * async execution engine using CompletableFutures
     * supporting generic dependencies (e.g. `List<String>`)
 
